@@ -14,7 +14,6 @@ class AdoptingSpider(scrapy.Spider):
             }
 
         paginator = response.css('div.contNavPaginado')
-        next_page = paginator.css('a[title="Página siguiente"]::attr(href)').extract_first()
         next_page = paginator.xpath('//a[text()="»"]/@href').extract_first()
         if next_page is not None:
             yield response.follow(next_page, self.parse)
