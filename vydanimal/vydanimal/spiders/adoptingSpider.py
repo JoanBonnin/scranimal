@@ -57,9 +57,8 @@ class AdoptingSpider(scrapy.Spider):
             'raza': extract_with_css('dd.ficha_raza::text'),
             'tamano': extract_with_css('dd.ficha_tamanio::text'),
             'localidad': re.sub('\xa0\n\t\t', '', extract_with_css('dd.ficha_localidad::text')),
-            'salud': extract_with_css('dd.ficha_salud::text'),
+            'salud': re.sub('\r\n', '', extract_with_css('dd.ficha_salud::text')),
             'descripcion': re.sub('\r\n', '', extract_with_css('dd.descripcion div::text')),
-
 
         }
 
