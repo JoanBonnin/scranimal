@@ -1,5 +1,6 @@
 import scrapy
 import re
+from urllib.parse import urlparse
 import sys
 
 class AdoptingSpider(scrapy.Spider):
@@ -43,6 +44,7 @@ class AdoptingSpider(scrapy.Spider):
             'localidad': self.extract_with_css('.ficha_localidad span::text', pet_container),
             'salud': self.extract_with_css('.ficha_salud::text', pet_container),
             'descripcion': self.extract_with_css('.ficha_descripcion  div::text', pet_container),
+            'dominio': self.get_domain(response),
         }
 
         for key, value in data.items():
@@ -77,3 +79,8 @@ class AdoptingSpider(scrapy.Spider):
         attr = re.sub("\s+", " ", attr) #Consecutive whitespaces
         attr.strip()
         return attr
+
+    def get_domain(self, response):
+        parsed_uri = urlparse(response.url)
+        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+        return domain
