@@ -1,9 +1,6 @@
 # Jetbrains IDEs
-*/.idea/*
-*/.idea
-.idea
-.idea/*
-.idea/workspace.xml
+**/.idea
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
