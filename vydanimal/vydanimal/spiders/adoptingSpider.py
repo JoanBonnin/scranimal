@@ -4,8 +4,7 @@ from urllib.parse import urlparse
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
-
-import sys
+import datetime
 
 class AdoptingSpider(scrapy.Spider):
     BOOLEAN_ATTRIBUTE_TRUE = 'SI'
@@ -67,6 +66,7 @@ class AdoptingSpider(scrapy.Spider):
 
         data = {
             'dominio': self.get_domain(response),
+            'scraped_at': self.get_current_datetime(),
 
             'id': self.extract_id(pet_container),
             'nombre': self.extract_name(pet_container),
@@ -248,3 +248,6 @@ class AdoptingSpider(scrapy.Spider):
     def extract_description(self, pet_container):
         desc = self.extract_with_css('.ficha_descripcion > div *::text', pet_container)
         return desc
+
+    def get_current_datetime(self):
+        return datetime.datetime.now()
