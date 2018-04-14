@@ -1,107 +1,67 @@
 import scrapy
 import re
 from urllib.parse import urlparse
+from scrapy.spidermiddlewares.httperror import HttpError
+from twisted.internet.error import DNSLookupError
+from twisted.internet.error import TimeoutError, TCPTimedOutError
+
 import sys
 
 class AdoptingSpider(scrapy.Spider):
-
-    start_urls = [
-        "http://adamprotectora.org/listado",
-        "http://protectoradeibi.com/listado",
-        "http://asokaelgrande.org/listado",
-        "http://nuevavida-adopciones.org/listado",
-        "http://caballoastur.com/listado",
-        "http://protectoraoriolana.org/listado",
-        "http://adoptam.org/listado",
-        "http://protectora-apadac.org/listado",
-        "http://adoptamics.org/listado",
-        "http://laperritavaliente.org/listado",
-        "http://saraprotectora.org/listado",
-        "http://protectorayecla.com/listado",
-        "http://protectoradecastalla.org/listado",
-        "http://proteccionfelina.org/listado",
-        "http://barcelonagatigos.org/listado",
-        "http://fundaciosilvestre.org/listado",
-        "http://www.vydanimal.org/listado",
-        "http://adoptasalvaunavida.com/listado",
-        "http://protectoraosbiosbardos.org/listado",
-        "http://alicanteadopta.org/listado",
-        "http://argos-sevilla.org/listado",
-        "http://universigats.org/listado",
-        "http://adopcioneslamadrilena.org/listado",
-        "http://protectoradeayamonte.org/listado",
-        "http://adopcionescereco.org/listado",
-        "http://rivanimal.org/listado",
-        "http://protectoradepalencia.org/listado",
-        "http://acogenos.org/listado",
-        "http://asociacion-rescat.org/listado",
-        "http://masquechuchos.org/listado",
-        "http://asociacioneltrasgu.com/listado",
-        "http://almeriadefensaanimal.com/listado",
-        "http://pro-sabuesos.org/listado",
-        "http://chuchos-gr.org/listado",
-        "http://protectoramossets.org/listado",
-        "http://animalssensesostre.org/listado",
-        "http://defensafelina.org/listado",
-        "http://asociacionzooland.org/listado",
-        "http://terraviva-adopcions.org/listado",
-        "http://peludinesalhama.org/listado",
-        "http://manopata.org/listado",
-        "http://adap-penedes.org/listado",
-        "http://feliur.org/listado",
-        "http://protectoravilagarcia.org/listado",
-        "http://protectoraporlospelos.org/listado",
-        "http://asociacionnaturaliahuelva.org",
-        "http://gatsdevilafranca.org/listado",
-        "http://gatosdeapapa.org/listado",
-        "http://olescan.org/listado",
-        "http://adoptaunamic.org/listado",
-        "http://protectoracabrils.org/listado",
-        "http://asociacion-proccan.org/listado",
-        "http://protectorabaix.org/listado",
-        "http://aspamasqueperros.org/listado",
-        "http://badagats.org/listado",
-        "http://gatsdelcarrer.org/listado",
-        "http://amicsdelsanimalsdelanoguera.org/listado",
-        "http://salvanos.es/listado",
-        "http://animalessinhogardebaena.org/listado",
-        "http://asociacionhada.org.es/listado",
-        "http://arcadenoe.org/listado",
-        "http://huellaahuella.org/listado",
-        "http://heroesde4patas.org/listado",
-        "http://darmur.org/listado",
-        "http://adoptababycan.org/listado",
-        "http://amicsdelsanimals.org",
-        "http://ronroneosazules.org/listado",
-        "http://zarpasyhuellas.org/listado",
-        "http://soscalahonda.org/listado",
-        "http://protectoradeanimalesalicante.org/listado",
-        "http://gatets.org/listado",
-        "http://arda.es/listado",
-        "http://spac.es/listado",
-        "http://animalrescueemporda.org/listado"
-    ]
 
     BOOLEAN_ATTRIBUTE_TRUE = 'SI'
     BOOLEAN_ATTRIBUTE_FALSE = 'NO'
     ATTRIBUTE_NA = 'NA'
 
     name = "adopting"
-    # start_urls = [
-    #     'http://vydanimal.org/listado'
-    # ]
+
+    start_urls = [
+        "http://bambu-cms.org/quien-usa"
+    ]
 
     def parse(self, response):
+        # All active shelters are in the first list
+        active_shelters = response.xpath('//div[@id="contenidos"]//ul[@id="protes"][1]//li//a/@href')
+
+        # Follow link to shelter page (if exists)
+        for shelter in active_shelters:
+            url_shelter = shelter.extract()
+
+            # Some URLs do not finish with a slash
+            if(url_shelter[-1] == '/'):
+                url_shelter = url_shelter + 'listado'
+            else:
+                url_shelter = url_shelter + '/listado'
+
+            yield response.follow(url_shelter, self.scrap_shelter, errback=self.url_error)
+
+    def scrap_shelter(self, response):
         # Follow links to pet profiles
         for in_adoption in response.css('div.cuadro_listado'):
             url_profile = in_adoption.css('p.leer_completo  a::attr(href)').extract_first()
-            yield response.follow(url_profile, self.scrap_profile)
+            yield response.follow(url_profile, self.scrap_profile, errback=self.url_error)
 
         # Follow links to next dynamic pages
         paginator = response.css('div.contNavPaginado')
         next_page = paginator.xpath('//a[text()="»"]/@href').extract_first()
         if next_page is not None:
-            yield response.follow(next_page, self.parse)
+            yield response.follow(next_page, self.parse, errback=self.url_error)
+
+    def url_error(self, failure):
+        if failure.check(HttpError):
+            # these exceptions come from HttpError spider middleware
+            # you can get the non-200 response
+            response = failure.value.response
+            self.logger.error('HttpError on %s', response.url)
+
+        elif failure.check(DNSLookupError):
+            # this is the original request
+            request = failure.request
+            self.logger.error('DNSLookupError on %s', request.url)
+
+        elif failure.check(TimeoutError, TCPTimedOutError):
+            request = failure.request
+            self.logger.error('TimeoutError on %s', request.url)
 
     def scrap_profile(self, response):
         pet_container = response.css('div.ficha_animal')
@@ -243,9 +203,15 @@ class AdoptingSpider(scrapy.Spider):
         return state
 
     def extract_health(self, pet_container):
-        health = self.extract_with_css('.ficha_salud::text', pet_container)
+        health = self.try_multiple_css_selectors(
+            ['.ficha_salud::text', 'dd.ficha_salud::text'],
+            pet_container
+        )
         return health
 
     def extract_description(self, pet_container):
-        desc = self.extract_with_css('.ficha_descripcion div::text', pet_container),
+        desc = self.try_multiple_css_selectors(
+            ['.ficha_descripcion div::text', 'dd.ficha_descripcion div::text'],
+            pet_container
+        )
         return desc
