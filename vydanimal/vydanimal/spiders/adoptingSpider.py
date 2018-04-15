@@ -13,6 +13,12 @@ class AdoptingSpider(scrapy.Spider):
 
     name = "adopting"
 
+    ANIMALS_LISTS = [
+        'listado',
+        'avisos',
+        'particulares',
+    ]
+
     start_urls = [
         "http://bambu-cms.org/quien-usa"
     ]
@@ -25,13 +31,14 @@ class AdoptingSpider(scrapy.Spider):
         for shelter in active_shelters:
             url_shelter = shelter.extract()
 
-            # Some URLs do not finish with a slash
-            if(url_shelter[-1] == '/'):
-                url_shelter = url_shelter + 'listado'
-            else:
-                url_shelter = url_shelter + '/listado'
+            for animals_list in self.ANIMALS_LISTS:
+                # Some URLs do not finish with a slash
+                list_url = url_shelter
+                if list_url[-1] != '/':
+                    list_url += '/'
 
-            yield response.follow(url_shelter, self.scrap_shelter, errback=self.url_error)
+                list_url += animals_list
+                yield response.follow(list_url, self.scrap_shelter, errback=self.url_error)
 
     def scrap_shelter(self, response):
         # Follow links to pet profiles
@@ -43,7 +50,7 @@ class AdoptingSpider(scrapy.Spider):
         paginator = response.css('div.contNavPaginado')
         next_page = paginator.xpath('//a[text()="»"]/@href').extract_first()
         if next_page is not None:
-            yield response.follow(next_page, self.parse, errback=self.url_error)
+            yield response.follow(next_page, self.scrap_shelter, errback=self.url_error)
 
     def url_error(self, failure):
         if failure.check(HttpError):
@@ -71,8 +78,11 @@ class AdoptingSpider(scrapy.Spider):
             'id': self.extract_id(pet_container),
             'nombre': self.extract_name(pet_container),
 
+            'foto': self.extract_photo(pet_container),
+
             'estado': self.extract_status(pet_container),
             'urgente': self.extract_urgency(pet_container),
+            'caso_especial': self.extract_special_case(pet_container),
 
             'clase': self.extract_class(pet_container),
             'desde': self.extract_since(pet_container),
@@ -115,23 +125,37 @@ class AdoptingSpider(scrapy.Spider):
             urgent = False
         return urgent
 
+    def extract_reserved(self, container):
+        reserved = self.extract_with_css('strong.reservado span::text', container)
+        if reserved is not None:
+            reserved = True
+        else:
+            reserved = False
+        return reserved
+
     # Create small function to avoid repeating code
     def extract_with_css(self, query, container):
         field = container.css(query).extract_first()
         return field
 
     def format_attribute(self, attr):
+        # Null formatter
         if attr is None:
             return self.ATTRIBUTE_NA
 
+        # Boolean formatter
         if type(attr) is bool:
             return self.BOOLEAN_ATTRIBUTE_TRUE if attr else self.BOOLEAN_ATTRIBUTE_FALSE
 
+        # String formatter
         if type(attr) is str:
             attr = re.sub("\n\t\r", "", attr)
             attr = re.sub("\s+", " ", attr) #Consecutive whitespaces
-            attr.strip()
-            return attr
+            attr = attr.strip()
+            if attr:
+                return attr
+            else:
+                return self.ATTRIBUTE_NA
 
         return attr
 
@@ -153,13 +177,16 @@ class AdoptingSpider(scrapy.Spider):
         )
         return id
 
-
     def extract_name(self, pet_container):
         name = self.try_multiple_css_selectors(
             ['.ficha_nombre span::text', 'dd.ficha_nombre::text'],
             pet_container
         )
         return name
+
+    def extract_photo(self, pet_container):
+        photo = self.extract_with_css('#contenedor_foto img::attr(src)', pet_container)
+        return photo
 
     def extract_class(self, pet_container):
         _class = self.try_multiple_css_selectors(
