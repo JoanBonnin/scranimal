@@ -1,6 +1,7 @@
 import scrapy
 import re
 from urllib.parse import urlparse
+from urllib.parse import urljoin
 from scrapy.spidermiddlewares.httperror import HttpError
 from twisted.internet.error import DNSLookupError
 from twisted.internet.error import TimeoutError, TCPTimedOutError
@@ -78,7 +79,7 @@ class AdoptingSpider(scrapy.Spider):
             'id': self.extract_id(pet_container),
             'name': self.extract_name(pet_container),
 
-            'image': self.extract_photo(pet_container),
+            'image': self.extract_photo(pet_container, response),
 
             'status': self.extract_status(pet_container),
             'urgency': self.extract_urgency(pet_container),
@@ -184,9 +185,11 @@ class AdoptingSpider(scrapy.Spider):
         )
         return name
 
-    def extract_photo(self, pet_container):
-        photo = self.extract_with_css('#contenedor_foto img::attr(src)', pet_container)
-        return photo
+    def extract_photo(self, pet_container, response):
+        photo_url = self.extract_with_css('#contenedor_foto > img::attr(src)', pet_container)
+        if photo_url is not None:
+            photo_url = urljoin(response.url, photo_url.strip())
+            return photo_url
 
     def extract_class(self, pet_container):
         _class = self.try_multiple_css_selectors(
