@@ -72,32 +72,32 @@ class AdoptingSpider(scrapy.Spider):
         pet_container = response.css('div.ficha_animal')
 
         data = {
-            'dominio': self.get_domain(response),
+            'domain': self.get_domain(response),
             'scraped_at': self.get_current_datetime(),
 
             'id': self.extract_id(pet_container),
-            'nombre': self.extract_name(pet_container),
+            'name': self.extract_name(pet_container),
 
-            'foto': self.extract_photo(pet_container),
+            'image': self.extract_photo(pet_container),
 
-            'estado': self.extract_status(pet_container),
-            'urgente': self.extract_urgency(pet_container),
-            'caso_especial': self.extract_special_case(pet_container),
+            'status': self.extract_status(pet_container),
+            'urgency': self.extract_urgency(pet_container),
+            'special_case': self.extract_special_case(pet_container),
 
-            'clase': self.extract_class(pet_container),
-            'desde': self.extract_since(pet_container),
-            'sexo': self.extract_gender(pet_container),
-            'edad': self.extract_age(pet_container),
-            'nacimiento': self.extract_birthday(pet_container),
-            'raza': self.extract_race(pet_container),
-            'tamano': self.extract_size(pet_container),
-            'peso': self.extract_weight(pet_container),
+            'class': self.extract_class(pet_container),
+            'since': self.extract_since(pet_container),
+            'gender': self.extract_gender(pet_container),
+            'age': self.extract_age(pet_container),
+            'birthday': self.extract_birthday(pet_container),
+            'race': self.extract_race(pet_container),
+            'sice': self.extract_size(pet_container),
+            'weight': self.extract_weight(pet_container),
             'chip': self.extract_chip(pet_container),
-            'situacion': self.extract_situation(pet_container),
-            'localidad': self.extract_state(pet_container),
+            'situation': self.extract_situation(pet_container),
+            'location': self.extract_state(pet_container),
 
-            'salud': self.extract_health(pet_container),
-            'descripcion': self.extract_description(pet_container),
+            'health': self.extract_health(pet_container),
+            'description': self.extract_description(pet_container),
         }
 
         for key, value in data.items():
