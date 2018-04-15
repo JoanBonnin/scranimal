@@ -8,18 +8,37 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
 BOT_NAME = 'vydanimal'
 
 SPIDER_MODULES = ['vydanimal.spiders']
 NEWSPIDER_MODULE = 'vydanimal.spiders'
-
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Bot for academical purposes: @joanbonnin & @elxaxe on github'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
+
+# Enable and configure HTTP caching (disabled by default)
+# See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
+HTTPCACHE_ENABLED = True
+HTTPCACHE_EXPIRATION_SECS = 3600 #Cache during an hour
+
+# Encoding
+FEED_EXPORT_ENCODING = 'utf-8'
+
+# Logging
+LOG_FILE = 'scrapy.log'
+LOG_LEVEL = 'INFO'
+
+# Prevent getting blocked:
+# Configure a delay for requests for the same website (default: 0)
+# See https://doc.scrapy.org/en/latest/topics/settings.html#download-delay
+# See also autothrottle settings and docs
+# DOWNLOAD_DELAY = 3
+# CONCURRENT_REQUESTS_PER_DOMAIN = 16
+# CONCURRENT_REQUESTS_PER_IP = 16
+CONCURRENT_REQUESTS = 64
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -83,10 +102,6 @@ ROBOTSTXT_OBEY = True
 
 # Enable and configure HTTP caching (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html#httpcache-middleware-settings
-HTTPCACHE_ENABLED = True
-HTTPCACHE_EXPIRATION_SECS = 3600 #Cache during an hour
 #HTTPCACHE_DIR = 'httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-
-FEED_EXPORT_ENCODING = 'utf-8'
