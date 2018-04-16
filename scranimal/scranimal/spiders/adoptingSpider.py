@@ -91,7 +91,7 @@ class AdoptingSpider(scrapy.Spider):
             'age': self.extract_age(pet_container),
             'birthday': self.extract_birthday(pet_container),
             'race': self.extract_race(pet_container),
-            'sice': self.extract_size(pet_container),
+            'size': self.extract_size(pet_container),
             'weight': self.extract_weight(pet_container),
             'chip': self.extract_chip(pet_container),
             'situation': self.extract_situation(pet_container),
