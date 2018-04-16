@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for vydanimal project
+# Scrapy settings for scranimal project
 #
 # For simplicity, this file contains only settings considered important or
 # commonly used. You can find more settings consulting the documentation:
@@ -8,10 +8,10 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-BOT_NAME = 'vydanimal'
+BOT_NAME = 'scranimal'
 
-SPIDER_MODULES = ['vydanimal.spiders']
-NEWSPIDER_MODULE = 'vydanimal.spiders'
+SPIDER_MODULES = ['scranimal.spiders']
+NEWSPIDER_MODULE = 'scranimal.spiders'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 USER_AGENT = 'Bot for academical purposes: @joanbonnin & @elxaxe on github'
@@ -55,13 +55,13 @@ CONCURRENT_REQUESTS = 64 # Default 16
 # Enable or disable spider middlewares
 # See https://doc.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'vydanimal.middlewares.VydanimalSpiderMiddleware': 543,
+#    'scranimal.middlewares.ScranimalSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'vydanimal.middlewares.VydanimalDownloaderMiddleware': 543,
+#    'scranimal.middlewares.ScranimalDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
@@ -73,7 +73,7 @@ CONCURRENT_REQUESTS = 64 # Default 16
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    'vydanimal.pipelines.VydanimalPipeline': 300,
+#    'scranimal.pipelines.ScranimalPipeline': 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)

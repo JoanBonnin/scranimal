@@ -8,7 +8,7 @@
 import scrapy
 
 
-class VydanimalItem(scrapy.Item):
+class ScranimalItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
